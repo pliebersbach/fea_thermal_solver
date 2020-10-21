@@ -39,6 +39,7 @@ ostream &operator<<(ostream &os, stiffnessMatrix &mat){
         }
         os<<std::endl;
     }
+    return os;
 };
 
 // void stiffnessMatrix::assembleStiffness(mesh &msh, material &mat){
