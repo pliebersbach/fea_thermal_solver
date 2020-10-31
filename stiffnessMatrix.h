@@ -13,8 +13,12 @@ class stiffnessMatrix{
     
     private:
 
-    double* _globalStiff = nullptr;
+    matrix _globalStiff;
     unsigned int _size;
+    unsigned int _freenodes;
+    bool * _cons;
+    myVector _solution;
+    myVector _loads;
 
     public:
 
@@ -22,13 +26,19 @@ class stiffnessMatrix{
 
     stiffnessMatrix(int ndofs);
 
-    double *operator[](int i);
+    stiffnessMatrix(int ndofs, int fixeddofs);
+
+    // double *operator[](int i);
 
     friend ostream &operator<<(ostream &os, stiffnessMatrix &mat);
 
-    // void assembleStiffness(mesh &msh, material &mat);
+    void assembleStiffness(mesh &msh, material &mat);
 
-    // void addStiffness( double(*)[4][4] matrix, const isoQuad4 &element );
+    void addStiffness( matrix &elementStiff, const isoQuad4 &element );
+    
+    void addfixeddof(std::vector<unsigned int> & nodes, double value);
+
+    void solveSystem();
 
     ~stiffnessMatrix();
 };

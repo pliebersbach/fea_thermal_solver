@@ -1,4 +1,5 @@
 #pragma once
+#include "math_utilities.h"
 
 #include <vector>
 #include <iostream>
@@ -59,7 +60,7 @@ class isoQuad4{
     isoQuad4(const isoQuad4 &quad);
     // ~isoQuad4();
 
-    void assembleLocalStiff(const std::vector<node2d> & nodeList, material &mat);
+    void assembleLocalStiff(const std::vector<node2d> & nodeList, material &mat, matrix & localStiff);
 
     double getArea(std::vector<node2d> & nodeList);
 

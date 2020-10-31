@@ -48,26 +48,25 @@ isoQuad4::isoQuad4(const isoQuad4 &quad)
 // isoQuad4::~isoQuad4(){
 //     std::cout << "isoQuad4 destructor called" << std::endl;
 // };
-
-void isoQuad4::assembleLocalStiff(const std::vector<node2d> &nodeList, material &mat)
+void isoQuad4::assembleLocalStiff(const std::vector<node2d> &nodeList, material &mat, matrix & localStiff)
 {
 
     double gqPoints4[4][2] = {{-1 / sqrt(3), -1 / sqrt(3)}, {-1 / sqrt(3), 1 / sqrt(3)}, {1 / sqrt(3), -1 / sqrt(3)}, {1 / sqrt(3), 1 / sqrt(3)}};
-    double coords[4][2];
+    matrix coords(4,2);
     for (int i = 0; i < 4; i++)
     {
         coords[i][0] = nodeList[_nodes[i]]._x;
         coords[i][1] = nodeList[_nodes[i]]._y;
     }
-
+    // cout << "element coordinates" << endl;
+    // cout << coords;
     double thickness = mat.getThickness();
     double thecon = mat.getTheCon();
 
-    double localStiff[4][4];
-    double j[2][2];
-    double g[2][2];
-    double w[2][4];
-    double B[2][4];
+    matrix jacobian(2, 2);
+    matrix g(2,2);
+    matrix w(2,4);
+    matrix B(2,4);
     double eta, xi;
     double jj;
 
@@ -87,33 +86,27 @@ void isoQuad4::assembleLocalStiff(const std::vector<node2d> &nodeList, material 
         w[1][2] =  (1.0 + xi)/4.0;
         w[1][3] =  (1.0 - xi)/4.0;
 
+        // cout << "w matrix" << endl;
+
+        // cout << w;
         //Evaluate jacobian matrix
+        jacobian.multiply(w, coords);
 
-        j[0][0] = w[0][0] * coords[0][0] + w[0][1] * coords[1][0] + w[0][2] * coords[2][0] + w[0][3] * coords[3][0];
-        j[0][1] = w[0][0] * coords[0][1] + w[0][1] * coords[1][1] + w[0][2] * coords[2][1] + w[0][3] * coords[3][1];
-        j[1][0] = w[1][0] * coords[0][0] + w[1][1] * coords[1][0] + w[1][2] * coords[2][0] + w[1][3] * coords[3][0];
-        j[1][1] = w[1][0] * coords[0][1] + w[1][1] * coords[1][1] + w[1][2] * coords[2][1] + w[1][3] * coords[3][1];
-
+        // cout << "jacobian matrix: " << endl;
+        // cout << jacobian;
         //evaluate jacobian determinant
-        jj = j[0][0] * j[1][1] - j[0][1] * j[1][0];
+        jj = jacobian[0][0] * jacobian[1][1] - jacobian[0][1] * jacobian[1][0];
 
         //evaluate jacobian inverse matrix
 
-        g[0][0] = j[1][1] / jj;
-        g[0][1] = -j[0][1] / jj;
-        g[1][0] = -j[1][0] / jj;
-        g[1][1] = j[0][0] / jj;
-
+        g[0][0] = jacobian[1][1] / jj;
+        g[0][1] = -jacobian[0][1] / jj;
+        g[1][0] = -jacobian[1][0] / jj;
+        g[1][1] = jacobian[0][0] / jj;
+        // cout << "jacobian inverse" << endl;
+        // cout << g;
         //evaluate B matrix
-
-        B[0][0] = g[0][0] * w[0][0] + g[0][1] * w[1][0];
-        B[0][1] = g[0][0] * w[0][1] + g[0][1] * w[1][1];
-        B[0][2] = g[0][0] * w[0][2] + g[0][1] * w[1][2];
-        B[0][3] = g[0][0] * w[0][3] + g[0][1] * w[1][3];
-        B[1][0] = g[1][0] * w[0][0] + g[1][1] * w[1][0];
-        B[1][1] = g[1][0] * w[0][1] + g[1][1] * w[1][1];
-        B[1][2] = g[1][0] * w[0][2] + g[1][1] * w[1][2];
-        B[1][3] = g[1][0] * w[0][3] + g[1][1] * w[1][3];
+        B.multiply(g, w);
 
         //evaluate B'k*B and add to element stiffness matrix
         for (int m = 0; m < 4; m++)
@@ -130,15 +123,105 @@ void isoQuad4::assembleLocalStiff(const std::vector<node2d> &nodeList, material 
             }
         }
     }
-
-    for (int i = 0; i < 4; i++)
-    {
-        std::cout << localStiff[i][0] << ", " << localStiff[i][1] << ", " << localStiff[i][2] << ", " << localStiff[i][3] << std::endl;
-    };
+    // cout << localStiff;
+    // for (int i = 0; i < 4; i++)
+    // {
+    //     std::cout << localStiff[i][0] << ", " << localStiff[i][1] << ", " << localStiff[i][2] << ", " << localStiff[i][3] << std::endl;
+    // };
     
     //assemble local stiffness matrix into global stiffness matrix
     // global.addStiffness(&localStiff, *this);
 };
+// void isoQuad4::assembleLocalStiff(const std::vector<node2d> &nodeList, material &mat)
+// {
+
+//     double gqPoints4[4][2] = {{-1 / sqrt(3), -1 / sqrt(3)}, {-1 / sqrt(3), 1 / sqrt(3)}, {1 / sqrt(3), -1 / sqrt(3)}, {1 / sqrt(3), 1 / sqrt(3)}};
+//     double coords[4][2];
+//     for (int i = 0; i < 4; i++)
+//     {
+//         coords[i][0] = nodeList[_nodes[i]]._x;
+//         coords[i][1] = nodeList[_nodes[i]]._y;
+//     }
+
+//     double thickness = mat.getThickness();
+//     double thecon = mat.getTheCon();
+
+//     double localStiff[4][4];
+//     double j[2][2];
+//     double g[2][2];
+//     double w[2][4];
+//     double B[2][4];
+//     double eta, xi;
+//     double jj;
+
+//     for (int i = 0; i < 4; i++)
+//     {
+
+//         eta = gqPoints4[i][1];
+//         xi = gqPoints4[i][0];
+
+//         //evaluate shape function derivatives matrix
+//         w[0][0] = -(1.0 - eta)/4.0;
+//         w[0][1] =  (1.0 - eta)/4.0;
+//         w[0][2] =  (1.0 + eta)/4.0;
+//         w[0][3] = -(1.0 + eta)/4.0;
+//         w[1][0] = -(1.0 - xi)/4.0;
+//         w[1][1] = -(1.0 + xi)/4.0;
+//         w[1][2] =  (1.0 + xi)/4.0;
+//         w[1][3] =  (1.0 - xi)/4.0;
+
+//         //Evaluate jacobian matrix
+
+//         j[0][0] = w[0][0] * coords[0][0] + w[0][1] * coords[1][0] + w[0][2] * coords[2][0] + w[0][3] * coords[3][0];
+//         j[0][1] = w[0][0] * coords[0][1] + w[0][1] * coords[1][1] + w[0][2] * coords[2][1] + w[0][3] * coords[3][1];
+//         j[1][0] = w[1][0] * coords[0][0] + w[1][1] * coords[1][0] + w[1][2] * coords[2][0] + w[1][3] * coords[3][0];
+//         j[1][1] = w[1][0] * coords[0][1] + w[1][1] * coords[1][1] + w[1][2] * coords[2][1] + w[1][3] * coords[3][1];
+
+//         //evaluate jacobian determinant
+//         jj = j[0][0] * j[1][1] - j[0][1] * j[1][0];
+
+//         //evaluate jacobian inverse matrix
+
+//         g[0][0] = j[1][1] / jj;
+//         g[0][1] = -j[0][1] / jj;
+//         g[1][0] = -j[1][0] / jj;
+//         g[1][1] = j[0][0] / jj;
+
+//         //evaluate B matrix
+
+//         B[0][0] = g[0][0] * w[0][0] + g[0][1] * w[1][0];
+//         B[0][1] = g[0][0] * w[0][1] + g[0][1] * w[1][1];
+//         B[0][2] = g[0][0] * w[0][2] + g[0][1] * w[1][2];
+//         B[0][3] = g[0][0] * w[0][3] + g[0][1] * w[1][3];
+//         B[1][0] = g[1][0] * w[0][0] + g[1][1] * w[1][0];
+//         B[1][1] = g[1][0] * w[0][1] + g[1][1] * w[1][1];
+//         B[1][2] = g[1][0] * w[0][2] + g[1][1] * w[1][2];
+//         B[1][3] = g[1][0] * w[0][3] + g[1][1] * w[1][3];
+
+//         //evaluate B'k*B and add to element stiffness matrix
+//         for (int m = 0; m < 4; m++)
+//         {
+//             for (int k = m; k < 4; k++)
+//             {
+//                 double sum = 0.0;
+//                 for (int l = 0; l < 2; l++)
+//                 {
+//                     sum = sum + B[l][m] * B[l][k];
+//                 }
+//                 localStiff[m][k] = localStiff[m][k] + sum * thickness * thecon*jj;
+//                 localStiff[k][m] = localStiff[m][k];
+//             }
+//         }
+//     }
+
+//     for (int i = 0; i < 4; i++)
+//     {
+//         std::cout << localStiff[i][0] << ", " << localStiff[i][1] << ", " << localStiff[i][2] << ", " << localStiff[i][3] << std::endl;
+//     };
+    
+//     //assemble local stiffness matrix into global stiffness matrix
+//     // global.addStiffness(&localStiff, *this);
+// };
 
 double isoQuad4::getArea(std::vector<node2d> &nodeList)
 {
