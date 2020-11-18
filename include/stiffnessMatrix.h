@@ -36,9 +36,21 @@ class stiffnessMatrix{
 
     void addStiffness( matrix &elementStiff, const isoQuad4 &element );
     
-    void addfixeddof(std::vector<unsigned int> & nodes, double value);
+    void bcFixedTemp(std::vector<unsigned int> & nodes, double value);
+
+    void bcHeatGeneration(mesh & msh, material & mat, std::vector<unsigned int> & nodes, double q);
+
+    void bcHeatGeneration(mesh & msh, material & mat, double q);
+
+    void bcHeatFlux(mesh & msh, std::vector<unsigned int> eles, double q);
+    
+    void addloads(myVector & elementloads, const isoQuad4 & element);
 
     void solveSystem();
+
+    void printSolution();
+
+    void writeSolution(mesh & msh);
 
     ~stiffnessMatrix();
 };

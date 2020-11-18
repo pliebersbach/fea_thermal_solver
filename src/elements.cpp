@@ -1,6 +1,6 @@
-#include "elements.h"
-#include "mesh.h"
-#include "math_utilities.h"
+#include "../include/elements.h"
+#include "../include/mesh.h"
+#include "../include/math_utilities.h"
 // #include "stiffnessMatrix.h"
 
 #include <cstdlib>
@@ -132,6 +132,72 @@ void isoQuad4::assembleLocalStiff(const std::vector<node2d> &nodeList, material 
     //assemble local stiffness matrix into global stiffness matrix
     // global.addStiffness(&localStiff, *this);
 };
+
+void isoQuad4::assembleHeatGeneration(const std::vector<node2d> & nodeList, material & mat, myVector & loads, double q){
+    
+    double gqPoints4[4][2] = {{-1 / sqrt(3), -1 / sqrt(3)}, {-1 / sqrt(3), 1 / sqrt(3)}, {1 / sqrt(3), -1 / sqrt(3)}, {1 / sqrt(3), 1 / sqrt(3)}};
+    matrix coords(4,2);
+    
+    for (int i = 0; i < 4; i++)
+    {
+        coords[i][0] = nodeList[_nodes[i]]._x;
+        coords[i][1] = nodeList[_nodes[i]]._y;
+    }
+
+    myVector N = myVector(4);
+    matrix jacobian = matrix(2,2);
+    matrix w = matrix(2,4);
+    
+    double localloads[4];
+    localloads[0] = 0.0;
+    localloads[1] = 0.0;
+    localloads[2] = 0.0;
+    localloads[3] = 0.0;
+
+    // double q = 6.0;
+    double eta;
+    double xi;
+    double jj;
+
+    for(int i = 0; i < 4; i++){
+
+        eta = gqPoints4[i][1];
+        xi = gqPoints4[i][0];
+
+        N.setValue(0.25*(1-xi)*(1-eta), 0);
+        N.setValue(0.25*(1+xi)*(1-eta), 1);
+        N.setValue(0.25*(1+xi)*(1+eta), 2);
+        N.setValue(0.25*(1-xi)*(1+eta), 3);
+
+        //evaluate shape function derivatives matrix
+        w[0][0] = -(1.0 - eta)/4.0;
+        w[0][1] =  (1.0 - eta)/4.0;
+        w[0][2] =  (1.0 + eta)/4.0;
+        w[0][3] = -(1.0 + eta)/4.0;
+        w[1][0] = -(1.0 - xi)/4.0;
+        w[1][1] = -(1.0 + xi)/4.0;
+        w[1][2] =  (1.0 + xi)/4.0;
+        w[1][3] =  (1.0 - xi)/4.0;
+
+        jacobian.multiply(w, coords);
+        jj = jacobian[0][0]*jacobian[1][1] - jacobian[0][1]*jacobian[1][0];
+
+        localloads[0] += q*N[0]*jj;
+        localloads[1] += q*N[1]*jj;
+        localloads[2] += q*N[2]*jj;
+        localloads[3] += q*N[3]*jj;
+
+    }
+
+    loads.setValue(localloads[0], 0);
+    loads.setValue(localloads[1], 1);
+    loads.setValue(localloads[2], 2);
+    loads.setValue(localloads[3], 3);
+
+    std::cout << "Loads from internal heat generation" << std::endl;
+    std::cout << loads;
+
+};
 // void isoQuad4::assembleLocalStiff(const std::vector<node2d> &nodeList, material &mat)
 // {
 
@@ -234,6 +300,16 @@ double isoQuad4::getArea(std::vector<node2d> &nodeList)
                   (nodeList[_nodes[3]]._x * nodeList[_nodes[0]]._y - nodeList[_nodes[3]]._y * nodeList[_nodes[0]]._x);
 
     return fabs(area / 2.0);
+};
+
+line2::line2(){
+    _nodes[0] = 0;
+    _nodes[1] = 0;
+};
+
+line2::line2(unsigned int n1, unsigned int n2){
+    _nodes[0] = n1;
+    _nodes[1] = n2;
 };
 
 material::material()

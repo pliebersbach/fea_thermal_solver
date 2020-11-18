@@ -1,8 +1,9 @@
-#include "elements.h"
-#include "stiffnessMatrix.h"
-#include "mesh.h"
+#include "../include/elements.h"
+#include "../include/stiffnessMatrix.h"
+#include "../include/mesh.h"
 
 #include <iostream>
+#include <fstream>
 
 using namespace std;
 
@@ -34,7 +35,7 @@ stiffnessMatrix::stiffnessMatrix(int ndofs, int fixeddofs){
 
 };
 
-void stiffnessMatrix::addfixeddof(std::vector<unsigned int> & nodes, double value){
+void stiffnessMatrix::bcFixedTemp(std::vector<unsigned int> & nodes, double value){
     
     for(unsigned int x : nodes){
         _cons[x] = true;
@@ -42,6 +43,36 @@ void stiffnessMatrix::addfixeddof(std::vector<unsigned int> & nodes, double valu
         _freenodes--;
     }
 
+};
+
+void stiffnessMatrix::bcHeatGeneration(mesh & msh, material & mat, std::vector<unsigned int> & nodes,  double q){
+    const std::vector<isoQuad4> &elementlist = msh.getElementList();
+    const std::vector<node2d> &nodelist = msh.getNodeList();
+    for(int i : nodes){
+        isoQuad4 element = msh.getElement(i);
+        myVector elementloads = myVector(4);
+        element.assembleHeatGeneration(nodelist, mat, elementloads, q);
+        addloads(elementloads, element);
+    }
+};
+
+void stiffnessMatrix::bcHeatGeneration(mesh & msh, material & mat,  double q){
+    const std::vector<isoQuad4> &elementlist = msh.getElementList();
+    const std::vector<node2d> &nodelist = msh.getNodeList();
+    for(isoQuad4 element : elementlist){
+        myVector elementloads = myVector(4);
+        element.assembleHeatGeneration(nodelist, mat, elementloads, q);
+        addloads(elementloads, element);
+    }
+};
+
+void stiffnessMatrix::bcHeatFlux(mesh & msh, std::vector<unsigned int> eles, double q){
+    double heat = q/2.0;
+    for(unsigned int i : eles){
+        line2 element  = msh.getBoundaryElement(i);
+        (*this)._loads.addValue(heat, element._nodes[0]);
+        (*this)._loads.addValue(heat, element._nodes[1]);
+    }
 };
 
 // double *stiffnessMatrix::operator[](int i){
@@ -58,7 +89,12 @@ stiffnessMatrix::~stiffnessMatrix(){
 };
 
 ostream &operator<<(ostream &os, stiffnessMatrix &global){
+    os << "Global Stiffness Matrix: " << endl;
     os << global._globalStiff;
+    os << "Load Vector: " << endl;
+    os << global._loads;
+    os << "Solution Vector: " << endl;
+    os << global._solution;
     return os;
 };
 
@@ -72,8 +108,9 @@ void stiffnessMatrix::assembleStiffness(mesh &msh, material &mat){
 
     for(int i = 0; i < neles; i++){
         matrix elementstiff = matrix(4);
+        myVector elementloads = myVector(4);
         elementlist[i].assembleLocalStiff(nodelist, mat, elementstiff);
-        addStiffness(elementstiff, elementlist[i]);
+        addStiffness(elementstiff, elementlist[i]);        
     }
 
     // for(isoQuad4 element : msh.elementList){
@@ -97,8 +134,17 @@ void stiffnessMatrix::addStiffness(matrix & elementStiff, const isoQuad4 &elemen
 
 };
 
+void stiffnessMatrix::addloads(myVector & elementloads, const isoQuad4 & element){
+    for(int i = 0; i < 4; i++){
+        (*this)._loads.addValue(elementloads[i], element._nodes[i]);
+    }
+};
+
 void stiffnessMatrix::solveSystem(){
     
+    std::cout << "Load vector from top of solver: " << std::endl;
+    std::cout << _loads;
+
     matrix subMatrix = matrix(_freenodes);
     myVector subloads = myVector(_freenodes);
     myVector subsoln = myVector(_freenodes);
@@ -136,6 +182,50 @@ void stiffnessMatrix::solveSystem(){
 
     std::cout << "Sub Solution from solver" << std::endl;
     std::cout << subsoln;
+    int j = 0;
+
+    for(int i = 0; i < _size; i++){
+    
+        if(!_cons[i]){
+            _solution.setValue( subsoln[j], i);
+            j++;
+        }
+    
+    }
 
 
+};
+
+void stiffnessMatrix::printSolution(){
+    std::cout << "Nodal Solution:" << std::endl;
+    std::cout << _solution;
+};
+
+void stiffnessMatrix::writeSolution(mesh & msh){
+    ofstream soln;
+    soln.open("solution.mat", ios::trunc);
+    for(int i = 0; i < _size; i++){
+        soln << _solution[i] << endl;
+    }
+    soln.close();
+
+    const std::vector<node2d> &nodelist = msh.getNodeList();
+    ofstream points;
+    points.open("points.mat", ios::trunc);
+    for(int i = 0; i < msh.getNumNodes(); i++){
+        points << nodelist[i]._x << ", " << nodelist[i]._y << endl;
+    }
+    points.close();
+
+    const std::vector<isoQuad4> & elementlist = msh.getElementList();
+    ofstream meshout;
+    meshout.open("mesh.mat", ios::trunc);
+    for(int i = 0; i < msh.getNumEles(); i++){
+        meshout << elementlist[i]._nodes[0] << ", ";
+        meshout << elementlist[i]._nodes[1] << ", ";
+        meshout << elementlist[i]._nodes[2] << ", ";
+        meshout << elementlist[i]._nodes[3] << endl;
+    }
+
+    std::cout << "Done writing solution files." << std::endl;
 };

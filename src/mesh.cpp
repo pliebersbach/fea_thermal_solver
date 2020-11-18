@@ -1,5 +1,5 @@
-#include "elements.h"
-#include "mesh.h"
+#include "../include/elements.h"
+#include "../include/mesh.h"
 
 #include <cstdlib>
 #include <iostream>
@@ -16,6 +16,15 @@ mesh::mesh(unsigned int nnodes, unsigned int nelements){
     cout << "Node List Location:    " << &nodeList << endl;
 
 };
+
+mesh::mesh(unsigned int nnodes, unsigned int nelements, unsigned int nboundaryeles){
+    nodeList.reserve(nnodes);
+    elementList.reserve(nelements);
+    boundaryEleList.reserve(nboundaryeles);
+    _numnodes = nnodes;
+    _numelements = nelements;
+    _numBoundaryEles = nboundaryeles;
+}
 
 /*
 mesh::mesh(unsigned int nnodes, unsigned int nelements, int dim){
@@ -35,10 +44,18 @@ void mesh::addElement(unsigned int n1, unsigned int n2, unsigned int n3, unsigne
 
 void mesh::addNode(double x, double y){
     nodeList.push_back(node2d(x, y));
+};
+
+void mesh::addBoundaryElement(unsigned int n1, unsigned int n2){
+    boundaryEleList.push_back(line2(n1, n2));
 }
 
 isoQuad4 mesh::getElement(unsigned int i){
     return elementList[i];
+}
+
+line2 mesh::getBoundaryElement(unsigned int i){
+    return boundaryEleList[i];
 }
 
 const std::vector<isoQuad4> & mesh::getElementList(){
@@ -49,8 +66,16 @@ const std::vector<node2d> & mesh::getNodeList(){
     return nodeList;
 }
 
+const std::vector<line2> & mesh::getBoundaryElementList(){
+    return boundaryEleList;
+}
+
 unsigned int mesh::getNumEles(){
     return _numelements;
+};
+
+unsigned int mesh::getNumNodes(){
+    return _numnodes;
 }
 
 // mesh::~mesh(){
@@ -73,6 +98,12 @@ ostream & operator<<(ostream & os, const mesh &msh){
 
     for(int i = 0; i < msh._numelements; i++){
         os << msh.elementList[i]._nodes[0] << " " << msh.elementList[i]._nodes[1] << " " << msh.elementList[i]._nodes[2] << " " << msh.elementList[i]._nodes[3] << "element location: " << &msh.elementList[i] << endl;
+    }
+
+    os << "Boundary Element List" << endl;
+
+    for(int i = 0; i < msh._numBoundaryEles; i++){
+        os << msh.boundaryEleList[i]._nodes[0] << " " << msh.boundaryEleList[i]._nodes[1] << endl;
     }
 
     return os;

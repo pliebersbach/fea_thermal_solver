@@ -1,4 +1,4 @@
-#include "math_utilities.h"
+#include "../include/math_utilities.h"
 
 #include <iostream>
 #include <vector>
@@ -178,9 +178,20 @@ void myVector::setValue(double value, unsigned int i){
     _vector[i] = value;
 };
 
+void myVector::addValue(double value, unsigned int i){
+    
+    if (i > _size)
+    {
+        std::cout << "Index out of bounds.  Operation aborted" << std::endl;
+        return;
+    }
+
+    _vector[i] += value;
+};
+
 double * myVector::getVector(){
     return _vector;
-}
+};
 
 ostream & operator<<(ostream &os, myVector & vec){
     os << "Print vector:" << std::endl;
