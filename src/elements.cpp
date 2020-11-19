@@ -312,6 +312,10 @@ line2::line2(unsigned int n1, unsigned int n2){
     _nodes[1] = n2;
 };
 
+double line2::getLength(const std::vector<node2d> & nodelist){
+    return sqrt( (nodelist[_nodes[1]]._x - nodelist[_nodes[0]]._x)*(nodelist[_nodes[1]]._x - nodelist[_nodes[0]]._x) + (nodelist[_nodes[1]]._y - nodelist[_nodes[0]]._y)*(nodelist[_nodes[1]]._y - nodelist[_nodes[0]]._y) );
+}
+
 material::material()
 {
     _thickness = 1.0;

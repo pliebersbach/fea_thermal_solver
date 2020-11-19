@@ -34,21 +34,21 @@ int main(){
     mymesh.addNode(0.50, 0.00);
     mymesh.addNode(0.75, 0.00);
     mymesh.addNode(1.00, 0.00);
-    mymesh.addNode(0.00, 1.00);
-    mymesh.addNode(0.25, 1.00);
-    mymesh.addNode(0.50, 1.00);
-    mymesh.addNode(0.75, 1.00);
-    mymesh.addNode(1.00, 1.00);
-    mymesh.addNode(0.00, 2.00);
-    mymesh.addNode(0.25, 2.00);
-    mymesh.addNode(0.50, 2.00);
-    mymesh.addNode(0.75, 2.00);
-    mymesh.addNode(1.00, 2.00);
-    mymesh.addNode(0.00, 3.00);
-    mymesh.addNode(0.25, 3.00);
-    mymesh.addNode(0.50, 3.00);
-    mymesh.addNode(0.75, 3.00);
-    mymesh.addNode(1.00, 3.00);
+    mymesh.addNode(0.00, 0.25);
+    mymesh.addNode(0.25, 0.25);
+    mymesh.addNode(0.50, 0.25);
+    mymesh.addNode(0.75, 0.25);
+    mymesh.addNode(1.00, 0.25);
+    mymesh.addNode(0.00, 0.50);
+    mymesh.addNode(0.25, 0.50);
+    mymesh.addNode(0.50, 0.50);
+    mymesh.addNode(0.75, 0.50);
+    mymesh.addNode(1.00, 0.50);
+    mymesh.addNode(0.00, 0.75);
+    mymesh.addNode(0.25, 0.75);
+    mymesh.addNode(0.50, 0.75);
+    mymesh.addNode(0.75, 0.75);
+    mymesh.addNode(1.00, 0.75);
 
     mymesh.addElement(0, 1, 6, 5);
     mymesh.addElement(1, 2, 7, 6);
@@ -89,7 +89,7 @@ int main(){
 
     global.bcFixedTemp(temp, 300.0);
     // global.bcFixedTemp(temp2, 500.0);
-    global.bcHeatFlux(mymesh, heat, -5000.0);
+    global.bcHeatFlux(mymesh, heat, -2500.0);
     global.assembleStiffness(mymesh, mat);
     global.solveSystem();
     global.printSolution();

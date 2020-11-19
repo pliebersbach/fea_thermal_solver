@@ -5,8 +5,6 @@
 #include <iostream>
 #include <cmath>
 
-
-
 class node2d{
     
     public:
@@ -80,6 +78,8 @@ class line2{
     line2();
 
     line2(unsigned int n1, unsigned int n2);
+
+    double getLength(const std::vector<node2d> & nodelist);
 
     // ~line2();
 

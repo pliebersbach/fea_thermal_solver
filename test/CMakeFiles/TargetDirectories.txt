@@ -1,0 +1,8 @@
+/mnt/d/grad_school/fea_solver/solver/test/CMakeFiles/rebuild_cache.dir
+/mnt/d/grad_school/fea_solver/solver/test/CMakeFiles/edit_cache.dir
+/mnt/d/grad_school/fea_solver/solver/test/CMakeFiles/slab2.dir
+/mnt/d/grad_school/fea_solver/solver/test/CMakeFiles/slab.dir
+/mnt/d/grad_school/fea_solver/solver/test/CMakeFiles/slab3.dir
+/mnt/d/grad_school/fea_solver/solver/test/CMakeFiles/plate.dir
+/mnt/d/grad_school/fea_solver/solver/test/CMakeFiles/stiff.dir
+/mnt/d/grad_school/fea_solver/solver/test/CMakeFiles/matrixTest.dir

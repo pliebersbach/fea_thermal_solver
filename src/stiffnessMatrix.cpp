@@ -67,9 +67,13 @@ void stiffnessMatrix::bcHeatGeneration(mesh & msh, material & mat,  double q){
 };
 
 void stiffnessMatrix::bcHeatFlux(mesh & msh, std::vector<unsigned int> eles, double q){
-    double heat = q/2.0;
+    double length;
+    double heat;
+    const std::vector<node2d> & nodelist = msh.getNodeList();
     for(unsigned int i : eles){
         line2 element  = msh.getBoundaryElement(i);
+        double length = element.getLength(nodelist);
+        heat = (q*length)/2.0;
         (*this)._loads.addValue(heat, element._nodes[0]);
         (*this)._loads.addValue(heat, element._nodes[1]);
     }

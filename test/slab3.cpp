@@ -13,7 +13,7 @@ Boundary conditions: Heat  Flux on left  side q''
                      Heat Generation q_dot
                      Slab of length L and material with conductivity k
 Exact Solution:
-                T(x) = -(q_dot/(2*k))*x^2 + ((T_L-T_R)/L)*x + (q_dot*L/(2*k))*x + T_L
+                T(x) = (q_dot/(2k))*(L^2 - x^2) + (q''/k)*(L-x) + T_R
             ___________________
     |-->   |                   |
     |-->   |                   |
@@ -34,21 +34,21 @@ int main(){
     mymesh.addNode(0.50, 0.00);
     mymesh.addNode(0.75, 0.00);
     mymesh.addNode(1.00, 0.00);
-    mymesh.addNode(0.00, 1.00);
-    mymesh.addNode(0.25, 1.00);
-    mymesh.addNode(0.50, 1.00);
-    mymesh.addNode(0.75, 1.00);
-    mymesh.addNode(1.00, 1.00);
-    mymesh.addNode(0.00, 2.00);
-    mymesh.addNode(0.25, 2.00);
-    mymesh.addNode(0.50, 2.00);
-    mymesh.addNode(0.75, 2.00);
-    mymesh.addNode(1.00, 2.00);
-    mymesh.addNode(0.00, 3.00);
-    mymesh.addNode(0.25, 3.00);
-    mymesh.addNode(0.50, 3.00);
-    mymesh.addNode(0.75, 3.00);
-    mymesh.addNode(1.00, 3.00);
+    mymesh.addNode(0.00, 0.25);
+    mymesh.addNode(0.25, 0.25);
+    mymesh.addNode(0.50, 0.25);
+    mymesh.addNode(0.75, 0.25);
+    mymesh.addNode(1.00, 0.25);
+    mymesh.addNode(0.00, 0.50);
+    mymesh.addNode(0.25, 0.50);
+    mymesh.addNode(0.50, 0.50);
+    mymesh.addNode(0.75, 0.50);
+    mymesh.addNode(1.00, 0.50);
+    mymesh.addNode(0.00, 0.75);
+    mymesh.addNode(0.25, 0.75);
+    mymesh.addNode(0.50, 0.75);
+    mymesh.addNode(0.75, 0.75);
+    mymesh.addNode(1.00, 0.75);
 
     mymesh.addElement(0, 1, 6, 5);
     mymesh.addElement(1, 2, 7, 6);
