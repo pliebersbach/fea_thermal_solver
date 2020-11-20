@@ -23,6 +23,16 @@ node3d::node3d(double x, double y, double z) : _x(x), _y(y), _z(z){};
 
 isoQuad4::isoQuad4()
 {
+    /*
+    Iso Parametric 4 node quad element.
+    Node numbering is counter clockwise starting from lower left corner as:
+                           3 __________ 2
+                            |          |
+                            |          |
+                            |__________|
+                            0           1
+    Default Constructor; all nodes initialized to 0
+    */
     _nodes[0] = 0;
     _nodes[1] = 0;
     _nodes[2] = 0;
@@ -31,6 +41,20 @@ isoQuad4::isoQuad4()
 
 isoQuad4::isoQuad4(unsigned int n0, unsigned int n1, unsigned int n2, unsigned int n3)
 {
+        /*
+    Iso Parametric 4 node quad element.
+    Node numbering is counter clockwise starting from lower left corner as:
+                           3 __________ 2
+                            |          |
+                            |          |
+                            |__________|
+                            0           1
+    Class constructor; nodes indeces set to values passed to constructor
+    Inputs n0 - index of node 0 coordinate
+           n1 - index of node 1 coordinate
+           n2 - index of node 2 coordinate
+           n3 - index of node 3 coordinate
+    */
     _nodes[0] = n0;
     _nodes[1] = n1;
     _nodes[2] = n2;
@@ -39,18 +63,27 @@ isoQuad4::isoQuad4(unsigned int n0, unsigned int n1, unsigned int n2, unsigned i
 
 isoQuad4::isoQuad4(const isoQuad4 &quad)
 {
+    /*
+    Iso Parametric 4 node quad element.
+
+    Copy Constructor; copies nodal values to new quad object
+    */
     cout << "copy constructor called" << endl;
     _nodes[0] = quad._nodes[0];
     _nodes[1] = quad._nodes[1];
     _nodes[2] = quad._nodes[2];
     _nodes[3] = quad._nodes[3];
-}
-// isoQuad4::~isoQuad4(){
-//     std::cout << "isoQuad4 destructor called" << std::endl;
-// };
+};
+
 void isoQuad4::assembleLocalStiff(const std::vector<node2d> &nodeList, material &mat, matrix & localStiff)
 {
-
+        /*
+    Iso Parametric 4 node quad element.
+    Method to assemble elemental stiffness matrix for heat conduction.  Uses Full Gauss Quadrature (2x2 points) for integration
+    Inputs: nodelist - reference to vector of mesh coordinates
+            mat - reference to element material object, holds material thickness and thermal conductivity
+            localStiff - reference to matrix object that will store the computed elemental stiffness matrix
+    */
     double gqPoints4[4][2] = {{-1 / sqrt(3), -1 / sqrt(3)}, {-1 / sqrt(3), 1 / sqrt(3)}, {1 / sqrt(3), -1 / sqrt(3)}, {1 / sqrt(3), 1 / sqrt(3)}};
     matrix coords(4,2);
     for (int i = 0; i < 4; i++)
@@ -58,8 +91,7 @@ void isoQuad4::assembleLocalStiff(const std::vector<node2d> &nodeList, material 
         coords[i][0] = nodeList[_nodes[i]]._x;
         coords[i][1] = nodeList[_nodes[i]]._y;
     }
-    // cout << "element coordinates" << endl;
-    // cout << coords;
+
     double thickness = mat.getThickness();
     double thecon = mat.getTheCon();
 
@@ -86,14 +118,9 @@ void isoQuad4::assembleLocalStiff(const std::vector<node2d> &nodeList, material 
         w[1][2] =  (1.0 + xi)/4.0;
         w[1][3] =  (1.0 - xi)/4.0;
 
-        // cout << "w matrix" << endl;
-
-        // cout << w;
         //Evaluate jacobian matrix
         jacobian.multiply(w, coords);
 
-        // cout << "jacobian matrix: " << endl;
-        // cout << jacobian;
         //evaluate jacobian determinant
         jj = jacobian[0][0] * jacobian[1][1] - jacobian[0][1] * jacobian[1][0];
 
@@ -103,8 +130,7 @@ void isoQuad4::assembleLocalStiff(const std::vector<node2d> &nodeList, material 
         g[0][1] = -jacobian[0][1] / jj;
         g[1][0] = -jacobian[1][0] / jj;
         g[1][1] = jacobian[0][0] / jj;
-        // cout << "jacobian inverse" << endl;
-        // cout << g;
+
         //evaluate B matrix
         B.multiply(g, w);
 
@@ -123,18 +149,20 @@ void isoQuad4::assembleLocalStiff(const std::vector<node2d> &nodeList, material 
             }
         }
     }
-    // cout << localStiff;
-    // for (int i = 0; i < 4; i++)
-    // {
-    //     std::cout << localStiff[i][0] << ", " << localStiff[i][1] << ", " << localStiff[i][2] << ", " << localStiff[i][3] << std::endl;
-    // };
-    
-    //assemble local stiffness matrix into global stiffness matrix
-    // global.addStiffness(&localStiff, *this);
+
 };
 
 void isoQuad4::assembleHeatGeneration(const std::vector<node2d> & nodeList, material & mat, myVector & loads, double q){
-    
+    /*
+    Iso Parametric 4 node quad element.
+    Method to calculate nodal load vector contribution from internal heat generation.  Uses Full Gauss Quadrature
+    (2x2 points) for integration.
+    Inputs: nodelist - reference to vector of mesh coordinates
+            mat - reference to element material object, holds material thickness and thermal conductivity
+            loads - reference to vector object that will hold the computed load vector contribution
+            q - the value of the internal heat generation
+            
+    */
     double gqPoints4[4][2] = {{-1 / sqrt(3), -1 / sqrt(3)}, {-1 / sqrt(3), 1 / sqrt(3)}, {1 / sqrt(3), -1 / sqrt(3)}, {1 / sqrt(3), 1 / sqrt(3)}};
     matrix coords(4,2);
     
@@ -154,7 +182,6 @@ void isoQuad4::assembleHeatGeneration(const std::vector<node2d> & nodeList, mate
     localloads[2] = 0.0;
     localloads[3] = 0.0;
 
-    // double q = 6.0;
     double eta;
     double xi;
     double jj;
@@ -194,105 +221,19 @@ void isoQuad4::assembleHeatGeneration(const std::vector<node2d> & nodeList, mate
     loads.setValue(localloads[2], 2);
     loads.setValue(localloads[3], 3);
 
-    std::cout << "Loads from internal heat generation" << std::endl;
-    std::cout << loads;
-
 };
-// void isoQuad4::assembleLocalStiff(const std::vector<node2d> &nodeList, material &mat)
-// {
-
-//     double gqPoints4[4][2] = {{-1 / sqrt(3), -1 / sqrt(3)}, {-1 / sqrt(3), 1 / sqrt(3)}, {1 / sqrt(3), -1 / sqrt(3)}, {1 / sqrt(3), 1 / sqrt(3)}};
-//     double coords[4][2];
-//     for (int i = 0; i < 4; i++)
-//     {
-//         coords[i][0] = nodeList[_nodes[i]]._x;
-//         coords[i][1] = nodeList[_nodes[i]]._y;
-//     }
-
-//     double thickness = mat.getThickness();
-//     double thecon = mat.getTheCon();
-
-//     double localStiff[4][4];
-//     double j[2][2];
-//     double g[2][2];
-//     double w[2][4];
-//     double B[2][4];
-//     double eta, xi;
-//     double jj;
-
-//     for (int i = 0; i < 4; i++)
-//     {
-
-//         eta = gqPoints4[i][1];
-//         xi = gqPoints4[i][0];
-
-//         //evaluate shape function derivatives matrix
-//         w[0][0] = -(1.0 - eta)/4.0;
-//         w[0][1] =  (1.0 - eta)/4.0;
-//         w[0][2] =  (1.0 + eta)/4.0;
-//         w[0][3] = -(1.0 + eta)/4.0;
-//         w[1][0] = -(1.0 - xi)/4.0;
-//         w[1][1] = -(1.0 + xi)/4.0;
-//         w[1][2] =  (1.0 + xi)/4.0;
-//         w[1][3] =  (1.0 - xi)/4.0;
-
-//         //Evaluate jacobian matrix
-
-//         j[0][0] = w[0][0] * coords[0][0] + w[0][1] * coords[1][0] + w[0][2] * coords[2][0] + w[0][3] * coords[3][0];
-//         j[0][1] = w[0][0] * coords[0][1] + w[0][1] * coords[1][1] + w[0][2] * coords[2][1] + w[0][3] * coords[3][1];
-//         j[1][0] = w[1][0] * coords[0][0] + w[1][1] * coords[1][0] + w[1][2] * coords[2][0] + w[1][3] * coords[3][0];
-//         j[1][1] = w[1][0] * coords[0][1] + w[1][1] * coords[1][1] + w[1][2] * coords[2][1] + w[1][3] * coords[3][1];
-
-//         //evaluate jacobian determinant
-//         jj = j[0][0] * j[1][1] - j[0][1] * j[1][0];
-
-//         //evaluate jacobian inverse matrix
-
-//         g[0][0] = j[1][1] / jj;
-//         g[0][1] = -j[0][1] / jj;
-//         g[1][0] = -j[1][0] / jj;
-//         g[1][1] = j[0][0] / jj;
-
-//         //evaluate B matrix
-
-//         B[0][0] = g[0][0] * w[0][0] + g[0][1] * w[1][0];
-//         B[0][1] = g[0][0] * w[0][1] + g[0][1] * w[1][1];
-//         B[0][2] = g[0][0] * w[0][2] + g[0][1] * w[1][2];
-//         B[0][3] = g[0][0] * w[0][3] + g[0][1] * w[1][3];
-//         B[1][0] = g[1][0] * w[0][0] + g[1][1] * w[1][0];
-//         B[1][1] = g[1][0] * w[0][1] + g[1][1] * w[1][1];
-//         B[1][2] = g[1][0] * w[0][2] + g[1][1] * w[1][2];
-//         B[1][3] = g[1][0] * w[0][3] + g[1][1] * w[1][3];
-
-//         //evaluate B'k*B and add to element stiffness matrix
-//         for (int m = 0; m < 4; m++)
-//         {
-//             for (int k = m; k < 4; k++)
-//             {
-//                 double sum = 0.0;
-//                 for (int l = 0; l < 2; l++)
-//                 {
-//                     sum = sum + B[l][m] * B[l][k];
-//                 }
-//                 localStiff[m][k] = localStiff[m][k] + sum * thickness * thecon*jj;
-//                 localStiff[k][m] = localStiff[m][k];
-//             }
-//         }
-//     }
-
-//     for (int i = 0; i < 4; i++)
-//     {
-//         std::cout << localStiff[i][0] << ", " << localStiff[i][1] << ", " << localStiff[i][2] << ", " << localStiff[i][3] << std::endl;
-//     };
-    
-//     //assemble local stiffness matrix into global stiffness matrix
-//     // global.addStiffness(&localStiff, *this);
-// };
 
 double isoQuad4::getArea(std::vector<node2d> &nodeList)
 {
+    /* 
+        Iso Parametric 4 node quad element.
+        Method to calculate the area of quadrilateral element from its nodal coordinate
+        Inputs: nodelist - reference to list of nodal coordinates of the mesh
 
-    std::cout << "Node List Location in getArea: " << &nodeList << std::endl;
+        Outputs: double - the area of the element
+
+     */
+    // std::cout << "Node List Location in getArea: " << &nodeList << std::endl;
 
     double area = (nodeList[_nodes[0]]._x * nodeList[_nodes[1]]._y - nodeList[_nodes[0]]._y * nodeList[_nodes[1]]._x) +
                   (nodeList[_nodes[1]]._x * nodeList[_nodes[2]]._y - nodeList[_nodes[1]]._y * nodeList[_nodes[2]]._x) +
@@ -303,21 +244,50 @@ double isoQuad4::getArea(std::vector<node2d> &nodeList)
 };
 
 line2::line2(){
+    /* 
+        Iso Parametric 2 node line element.
+
+                                0---------1
+        Default constructor; initialize node indeces to 0
+
+     */
     _nodes[0] = 0;
     _nodes[1] = 0;
 };
 
 line2::line2(unsigned int n1, unsigned int n2){
+        /* 
+        Iso Parametric 2 node line element.
+
+                                0---------1
+        Class constructor; set the node indeces to passed values
+        Inputs: n1 - index of node 0 coordinate
+                n2 - index of node 1 coordinate
+
+     */
     _nodes[0] = n1;
     _nodes[1] = n2;
 };
 
 double line2::getLength(const std::vector<node2d> & nodelist){
+        /* 
+        Iso Parametric 2 node line element.
+        Method to calculate length of line2 element.
+        Inputs: nodelist - reference to vector of coordinates in mesh
+        Outputs: double - the length of the line2 element
+
+     */
     return sqrt( (nodelist[_nodes[1]]._x - nodelist[_nodes[0]]._x)*(nodelist[_nodes[1]]._x - nodelist[_nodes[0]]._x) + (nodelist[_nodes[1]]._y - nodelist[_nodes[0]]._y)*(nodelist[_nodes[1]]._y - nodelist[_nodes[0]]._y) );
 }
 
 material::material()
 {
+        /* 
+        Material class. Holds material properties to be used in analysis.
+        Default Constructor: Initialize the material thickness to unit thickness 1m,
+                             Initialize the thermal conductivity to 100 W/mK
+
+     */
     _thickness = 1.0;
     _kMat[0][0] = 100.0;
     _kMat[0][1] = 100.0;
@@ -327,6 +297,13 @@ material::material()
 
 material::material(double thickness, double thecon)
 {
+    /* 
+        Material class. Holds material properties to be used in analysis.
+        Class Constructor: Initialize the material Properties to passed values
+        Inputs: thickness - the thickness of the material in metric units m
+                thecon - the thermal conductivity in metrix units, W/mk
+
+     */
     _thickness = thickness;
     _kMat[0][0] = thecon;
     _kMat[0][1] = thecon;
@@ -336,10 +313,24 @@ material::material(double thickness, double thecon)
 
 double material::getThickness()
 {
+    /* 
+        Material class. Holds material properties to be used in analysis.
+        Method to return thickness of material
+        Output: double - the thickness of the material
+
+     */
     return _thickness;
 };
 
 double material::getTheCon()
-{
+{   
+    /* 
+        Material class. Holds material properties to be used in analysis.
+        Method to return the thermal conductivity of material.
+        Assumes isotropic material and returns one value.
+        For anisotropic material corresponds to returning k_xx
+        Output: double - thermal conductivity
+
+     */
     return _kMat[0][0];
 }
