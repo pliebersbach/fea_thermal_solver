@@ -24,7 +24,9 @@ Exact Solution:
            |-->x               |
            0                   L
 */
-
+/*
+T_{1}\left(x\right)\ =\ T_{R}+\left(\frac{q}{k}\right)\cdot\left(L-x\right)
+*/
 int main(){
 
     mesh mymesh = mesh(20, 12, 14);

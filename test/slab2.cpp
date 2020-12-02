@@ -25,6 +25,10 @@ Exact Solution:
            0                   L
 */
 
+/*
+T_{3}\left(x\right)=-\frac{q_{dot}}{2\cdot k}x^{2}+\left(\frac{T_{L}-T_{R}}{L}\right)\cdot x\ +\ \frac{q_{dot}L}{2k}\cdot x\ +\ T_{L}
+*/
+
 int main(){
 
     mesh mymesh = mesh(20, 12, 14);

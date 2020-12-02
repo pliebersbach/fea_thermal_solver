@@ -25,6 +25,9 @@ Exact Solution:
            0                   L
 */
 
+/*
+T_{4}\left(x\right)=\frac{q_{dot}}{2k}\left(L^{2}-x^{2}\right)+\frac{q}{k}\left(L-x\right)+T_{R}
+*/
 int main(){
 
     mesh mymesh = mesh(20, 12, 14);
