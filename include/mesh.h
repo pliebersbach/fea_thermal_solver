@@ -30,6 +30,7 @@ class mesh{
         // int dim;
         // unsigned int _numnodes;
         // unsigned int _numelements;
+        mesh();
 
         mesh(unsigned int nnodes, unsigned int nelements);
 
@@ -37,6 +38,7 @@ class mesh{
 
 
         //mesh(unsigned int nnodes, unsigned int nelements, int dim);
+        void read_mesh(string name, unsigned int dim);
 
         void addElement(unsigned int n1, unsigned int n2, unsigned int n3, unsigned int n4);
 

@@ -5,13 +5,24 @@
 #include <iostream>
 #include <vector>
 #include <cmath>
+#include <fstream>
+#include <string>
+
+
+mesh::mesh(){
+    cout << "Default Constructor" << endl;
+    _numnodes = 0;
+    _numelements = 0;
+    _numBoundaryEles = 0;
+
+};
 
 mesh::mesh(unsigned int nnodes, unsigned int nelements){
     cout << "Mesh Constructor Called.  List Locations:" << endl;
- nodeList.reserve(nnodes);
- elementList.reserve(nelements);
- _numnodes=nnodes;
- _numelements=nelements;
+    nodeList.reserve(nnodes);
+    elementList.reserve(nelements);
+    _numnodes=nnodes;
+    _numelements=nelements;
     cout << "Element List Location: " << &elementList << endl;
     cout << "Node List Location:    " << &nodeList << endl;
 
@@ -37,6 +48,79 @@ mesh::mesh(unsigned int nnodes, unsigned int nelements, int dim){
 
 };
 */
+
+void mesh::read_mesh(string name, unsigned int dim){
+    std::ifstream inFile;
+    inFile.open(name);
+    if(!inFile){
+        cerr << "Unable to open file";
+        exit(1);
+    }
+    else{
+        cout << "File opened successfully" << endl;
+    }
+
+    //Read coordinates from file
+    std::string line;
+
+    while(std::getline(inFile, line)){
+        
+        if(line.find("Coordinates")==0){
+            std::getline(inFile, line);
+            unsigned int num_nodes = stoi(line);
+
+            nodeList.reserve(num_nodes);
+            _numnodes = num_nodes;
+
+            double x, y, z;
+            // cout << "Num Nodes: " << num_nodes << endl;
+
+            for(int i = 0; i < num_nodes; i++){
+                inFile >> x >> y >> z;
+                if (dim == 2)
+                {
+                    nodeList.push_back(node2d(x, y));
+                }
+                // else if (dim == 3)
+                // {
+                //     nodeList.push_back(node3d(x, y, z));
+                // }
+                // std::cout <<  "i: " << i << " X: " << x << " Y: " << y << " Z: " << z << std::endl;
+            }
+        }
+
+        if(line.find("Elements") == 0){
+            std::getline(inFile, line);
+            unsigned int num_eles = stoi(line);
+            elementList.reserve(num_eles);
+            _numelements = num_eles;
+            unsigned int n0, n1, n2, n3;
+            // cout << "Num Elements: " << num_eles << endl;
+
+            for(int i = 0; i < num_eles; i++){
+                inFile >> n0 >> n1 >> n2 >> n3;
+                elementList.push_back(isoQuad4(n0, n1, n2, n3));
+                // cout << "i: " << i << " n0: " << n0 << " n1: " << n1 << " n2: " << n2 << " n3: " << n3 << endl;
+            }
+        }
+
+        if(line.find("Edges")==0){
+            std::getline(inFile, line);
+            unsigned int num_eles = stoi(line);
+            boundaryEleList.reserve(num_eles);
+            _numBoundaryEles = num_eles;
+            unsigned int n0, n1;
+            // cout << "Num Boundary Eles: " << num_eles << endl;
+            for(int i = 0; i < num_eles; i++){
+                inFile >> n0 >> n1;
+                boundaryEleList.push_back(line2(n0, n1));
+                // cout << "i: " << i << " n0: " << n0 << " n1: " << n1 << endl;
+            }
+        }
+    }
+
+    inFile.close();
+}
 
 void mesh::addElement(unsigned int n1, unsigned int n2, unsigned int n3, unsigned int n4){
     elementList.push_back(isoQuad4(n1, n2, n3, n4));
