@@ -42,7 +42,7 @@ class stiffnessMatrix{
 
     void bcHeatGeneration(mesh & msh, material & mat, double q);
 
-    void bcHeatFlux(mesh & msh, std::vector<unsigned int> eles, double q);
+    void bcHeatFlux(mesh & msh, std::vector<unsigned int> & eles, double q);
     
     void addloads(myVector & elementloads, const isoQuad4 & element);
 

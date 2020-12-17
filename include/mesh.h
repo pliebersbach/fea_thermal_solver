@@ -19,6 +19,11 @@ class mesh{
     std::vector<isoQuad4> elementList;
     std::vector<line2> boundaryEleList;
 
+    //boundary conditions
+
+    std::vector<std::vector<unsigned int>> nodeset;
+    std::vector<std::vector<unsigned int>> sideset;
+
     int dim;
     unsigned int _numnodes;
     unsigned int _numelements;
@@ -55,6 +60,10 @@ class mesh{
         const std::vector<node2d> & getNodeList();
 
         const std::vector<line2> & getBoundaryElementList();
+
+        const std::vector<unsigned int> & getNodeSet(int i);
+
+        const std::vector<unsigned int> & getSideSet(int i);
 
         unsigned int getNumEles();
 

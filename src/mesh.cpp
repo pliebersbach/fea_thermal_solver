@@ -117,6 +117,51 @@ void mesh::read_mesh(string name, unsigned int dim){
                 // cout << "i: " << i << " n0: " << n0 << " n1: " << n1 << endl;
             }
         }
+
+        if (line.find("Nodesets") == 0)
+        {
+            std::getline(inFile, line);
+            unsigned int num_nodesets = stoi(line);
+            unsigned int num_nodes;
+            for (int i = 0; i < num_nodesets; i++)
+            {
+                inFile >> num_nodes;
+                // std::cout << "nodeset #:" << i << std::endl;
+                std::vector<unsigned int> nodeids;
+                unsigned int node_id;
+                for (int j = 0; j < num_nodes; j++)
+                {
+                    inFile >> node_id;
+                    // std::cout << "node id:" << node_id << std::endl;
+                    nodeids.push_back(node_id);
+                }
+
+                nodeset.push_back(nodeids);
+            }
+        }
+
+        if (line.find("Sidesets") == 0)
+        {
+            std::getline(inFile, line);
+            unsigned int num_sidesets = stoi(line);
+            unsigned int num_edges;
+            for (int i = 0; i < num_sidesets; i++)
+            {
+                inFile >> num_edges;
+                // std::cout << "sideset #:" << i << std::endl;
+                std::vector<unsigned int> edgeids;
+                unsigned int edge_id;
+                for (int j = 0; j < num_edges; j++)
+                {
+                    inFile >> edge_id;
+                    // std::cout << "edge id:" << edge_id << std::endl;
+                    edgeids.push_back(edge_id);
+                }
+
+                sideset.push_back(edgeids);
+            }
+        }
+
     }
 
     inFile.close();
@@ -154,6 +199,14 @@ const std::vector<line2> & mesh::getBoundaryElementList(){
     return boundaryEleList;
 }
 
+const std::vector<unsigned int> & mesh::getNodeSet(int i){
+    return nodeset[i];
+}
+
+const std::vector<unsigned int> & mesh::getSideSet(int i){
+    return sideset[i];
+}
+
 unsigned int mesh::getNumEles(){
     return _numelements;
 };
@@ -188,6 +241,26 @@ ostream & operator<<(ostream & os, const mesh &msh){
 
     for(int i = 0; i < msh._numBoundaryEles; i++){
         os << msh.boundaryEleList[i]._nodes[0] << " " << msh.boundaryEleList[i]._nodes[1] << endl;
+    }
+
+    os << "Nodeset boundary condition list:" << endl;
+    int i = 0;
+    for(std::vector<unsigned int> id_list : msh.nodeset){
+        os << "List " << i << endl;
+        for(unsigned int j : id_list){
+            os << j << endl;
+        }
+        i++;
+    }
+
+    os << "Sideset boundary condition list:" << endl;
+    i = 0;
+    for(std::vector<unsigned int> id_list : msh.sideset){
+        os << "List " << i << endl;
+        for(unsigned int j : id_list){
+            os << j << endl;
+        }
+        i++;
     }
 
     return os;
