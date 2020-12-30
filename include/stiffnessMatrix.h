@@ -9,42 +9,54 @@
 using namespace std;
 
 
-class stiffnessMatrix{
+class heatXFer: public mesh{
     
     private:
 
-    matrix _globalStiff;
-    unsigned int _size;
-    unsigned int _freenodes;
-    bool * _cons;
-    myVector _solution;
-    myVector _loads;
+    matrix myGlobalStiffnessMatrix;
+    unsigned int mySizeStiffnessMatrix;
+    unsigned int myFreeDofs;
+    bool * myConstrainedDof;
+    myVector mySolution;
+    myVector myLoads;
+
+    void addStiffness( matrix &elementStiff, const isoQuad4 &element );
+
+    void addloads(myVector & elementloads, const isoQuad4 & element);
 
     public:
 
-    stiffnessMatrix();
+    heatXFer();
 
-    stiffnessMatrix(int ndofs);
+    heatXFer(int ndofs);
 
-    stiffnessMatrix(int ndofs, int fixeddofs);
+    heatXFer(mesh & msh);
+
+    heatXFer(string name, int dim);
 
     // double *operator[](int i);
 
-    friend ostream &operator<<(ostream &os, stiffnessMatrix &mat);
+    void allocate();
+
+    friend ostream &operator<<(ostream &os, heatXFer &mat);
 
     void assembleStiffness(mesh &msh, material &mat);
 
-    void addStiffness( matrix &elementStiff, const isoQuad4 &element );
+    void assembleStiffness(material &mat);
     
     void bcFixedTemp(std::vector<unsigned int> & nodes, double value);
 
     void bcHeatGeneration(mesh & msh, material & mat, std::vector<unsigned int> & nodes, double q);
 
+    void bcHeatGeneration(material & mat, std::vector<unsigned int> & nodes, double q);
+
     void bcHeatGeneration(mesh & msh, material & mat, double q);
+
+    void bcHeatGeneration(material & mat, double q);
 
     void bcHeatFlux(mesh & msh, std::vector<unsigned int> & eles, double q);
     
-    void addloads(myVector & elementloads, const isoQuad4 & element);
+    void bcHeatFlux(std::vector<unsigned int> &eles, double q);
 
     void solveSystem();
 
@@ -52,5 +64,7 @@ class stiffnessMatrix{
 
     void writeSolution(mesh & msh);
 
-    ~stiffnessMatrix();
+    void writeSolution();
+
+    ~heatXFer();
 };

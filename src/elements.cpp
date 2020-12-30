@@ -68,7 +68,7 @@ isoQuad4::isoQuad4(const isoQuad4 &quad)
 
     Copy Constructor; copies nodal values to new quad object
     */
-    cout << "copy constructor called" << endl;
+    // cout << "copy constructor called" << endl;
     _nodes[0] = quad._nodes[0];
     _nodes[1] = quad._nodes[1];
     _nodes[2] = quad._nodes[2];

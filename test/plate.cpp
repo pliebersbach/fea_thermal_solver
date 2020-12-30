@@ -121,7 +121,7 @@ int main(){
     mymesh.addBoundaryElement(2, 1);
     mymesh.addBoundaryElement(1, 0);
     
-    stiffnessMatrix global = stiffnessMatrix(49);
+    heatXFer global = heatXFer(49);
     material mat = material(1, 100.0);
     std::vector<unsigned int> temp = {42, 43, 44, 45, 46, 47, 48};
     std::vector<unsigned int> temp2 = {0, 1, 2, 3, 4, 5, 6};

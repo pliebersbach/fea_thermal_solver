@@ -35,7 +35,7 @@ void matrix::allocate(unsigned int rows, unsigned int cols){
 };
 
 matrix::~matrix(){
-    std::cout << "Matrix destroyed" << std::endl;
+    // std::cout << "Matrix destroyed" << std::endl;
     delete[] _matrix;
     _matrix = nullptr;
 };
@@ -161,7 +161,7 @@ void myVector::allocate(unsigned int size){
 }
 
 myVector::~myVector(){
-    std::cout << "Vector deleted" << std::endl;
+    // std::cout << "Vector deleted" << std::endl;
     delete[] _vector;
     _vector = nullptr;
 }

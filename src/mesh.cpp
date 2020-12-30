@@ -10,7 +10,7 @@
 
 
 mesh::mesh(){
-    cout << "Default Constructor" << endl;
+    cout << "Default Mesh Constructor" << endl;
     _numnodes = 0;
     _numelements = 0;
     _numBoundaryEles = 0;
@@ -53,12 +53,14 @@ void mesh::read_mesh(string name, unsigned int dim){
     std::ifstream inFile;
     inFile.open(name);
     if(!inFile){
-        cerr << "Unable to open file";
+        cerr << "Unable to open file" << std::endl;
         exit(1);
     }
     else{
         cout << "File opened successfully" << endl;
     }
+
+    std::cout << "Begin Reading Mesh" << std::endl;
 
     //Read coordinates from file
     std::string line;
@@ -165,6 +167,9 @@ void mesh::read_mesh(string name, unsigned int dim){
     }
 
     inFile.close();
+
+    std::cout << "Finished Reading Mesh." << std::endl;
+    std::cout << std::endl;
 }
 
 void mesh::addElement(unsigned int n1, unsigned int n2, unsigned int n3, unsigned int n4){
