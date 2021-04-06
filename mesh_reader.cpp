@@ -7,11 +7,14 @@
 #include <vector>
 #include <time.h>
 
-int main()
-{
+int main(int argc, char* argv[])
+{   
+    string filename = argv[1];
+
     mesh mymesh = mesh();
 
-    mymesh.read_mesh("mesh_64.pl", 2);
+    // mymesh.read_mesh("mesh_.pl", 2);
+    mymesh.read_mesh(filename, 2);
 
     // mymesh.read_mesh("adsflh.csv", 2);
 
@@ -37,10 +40,16 @@ int main()
     global.bcFixedTemp(temp, 300.0);
     global.bcHeatFlux(mymesh, heat, 5000.0);
     global.assembleStiffness(mymesh, mat);
+    global.initializeSolution(315.0);
 
     clock_gettime(CLOCK_MONOTONIC, &middle);
 
-    global.solveSystem();
+    global.solveSystem("gauss elimination");
+    // global.solveSystem("jacobi iteration");
+    // global.solveSystem("gauss seidel");
+    // global.solveSystem("sor");
+    // global.solveSystem("conjugate gradient");
+
 
     clock_gettime(CLOCK_MONOTONIC, &end);
 
@@ -55,8 +64,9 @@ int main()
     std::cout << "Assembly time: " << time << " microseconds" << std::endl;
 
     std::cout << "Total solution time: " << time2 << " microseconds" << std::endl;
-    
-    global.printSolution();
+    // global.writeStiffnessMatrix("cg_stiff");
+    // global.writeLoads("cg_loads");
+    // global.printSolution();
     global.writeSolution(mymesh);
     // cout << mymesh;
 

@@ -104,13 +104,22 @@ void heatXFer::bcFixedTemp(std::vector<unsigned int> & nodes, double value){
 
     for(unsigned int x : nodes){
         myConstrainedDof[x] = true;
-        mySolution.setValue(value, x);
+        // mySolution.setValue(value, x);
+        mySolution.myData[x] = value;
         myFreeDofs--;    
     }
 
     std::cout << "Finished applying fixed temp bc's" << std::endl;
 
 };
+
+void heatXFer::initializeSolution(double temp){
+    for(int i = 0; i < mySizeStiffnessMatrix; i++){
+        if(!myConstrainedDof[i]){
+            mySolution.myData[i] = temp;
+        }
+    }
+}
 
 void heatXFer::bcHeatGeneration(mesh & msh, material & mat, std::vector<unsigned int> & eles,  double q){
     /* 
@@ -198,8 +207,10 @@ void heatXFer::bcHeatFlux(mesh & msh, std::vector<unsigned int> & eles, double q
         line2 element  = msh.getBoundaryElement(i);
         double length = element.getLength(nodelist);
         heat = (q*length)/2.0;
-        (*this).myLoads.addValue(heat, element._nodes[0]);
-        (*this).myLoads.addValue(heat, element._nodes[1]);
+        // (*this).myLoads.addValue(heat, element._nodes[0]);
+        // (*this).myLoads.addValue(heat, element._nodes[1]);
+        myLoads.myData[element._nodes[0]] += heat;
+        myLoads.myData[element._nodes[1]] += heat;
     }
 };
 
@@ -220,8 +231,10 @@ void heatXFer::bcHeatFlux(std::vector<unsigned int> & eles, double q){
         line2 element  = getBoundaryElement(i);
         double length = element.getLength(nodelist);
         heat = (q*length)/2.0;
-        (*this).myLoads.addValue(heat, element._nodes[0]);
-        (*this).myLoads.addValue(heat, element._nodes[1]);
+        // (*this).myLoads.addValue(heat, element._nodes[0]);
+        // (*this).myLoads.addValue(heat, element._nodes[1]);
+        myLoads.myData[element._nodes[0]] += heat;
+        myLoads.myData[element._nodes[1]] += heat;
     }
 
     std::cout << "Finished assembling loads form heat flux bc's" << std::endl;
@@ -332,7 +345,7 @@ void heatXFer::addStiffness(matrix & elementStiff, const isoQuad4 &element){
 
     for(int i = 0; i < 4; i++){
         for(int j = 0; j<4; j++){
-            (*this).myGlobalStiffnessMatrix[element._nodes[i]][element._nodes[j]] += elementStiff[i][j];
+            myGlobalStiffnessMatrix[element._nodes[i]][element._nodes[j]] += elementStiff[i][j];
         }
     }
 
@@ -344,14 +357,17 @@ void heatXFer::addloads(myVector & elementloads, const isoQuad4 & element){
     Adds loads from element load vector to the global load vector.
     Inputs:
         elementLoads - reference to myVector class object containing element's loads
-        element - a reference to a line class object, the owner of elements loads being added to global */
+        element - a reference to a line class object, the owner of elements loads being added to global
+    */
     
     for(int i = 0; i < 4; i++){
-        (*this).myLoads.addValue(elementloads[i], element._nodes[i]);
+        // myLoads.addValue(elementloads[i], element._nodes[i]);
+        myLoads.myData[element._nodes[i]] += elementloads[i];
+
     }
 };
 
-void heatXFer::solveSystem(){
+void heatXFer::solveSystem(string solver){
 
     /*
     Solves the linear system of equations using the Gauss Elmination method.
@@ -362,7 +378,9 @@ void heatXFer::solveSystem(){
 
     matrix subMatrix = matrix(myFreeDofs);
     myVector subloads = myVector(myFreeDofs);
+    double *b = subloads.myData;
     myVector subsoln = myVector(myFreeDofs);
+    double *x = subsoln.myData;
     
     int k = 0;
     int l = 0;
@@ -381,18 +399,39 @@ void heatXFer::solveSystem(){
                     tempLoad -= myGlobalStiffnessMatrix[i][j]*mySolution[j];
                 }
             }
-            subloads.setValue(tempLoad, k);
+            // subloads.setValue(tempLoad, k);
+            b[k] = tempLoad;
+
             k++;
             l = 0;
         }
     }
 
+    subMatrix.printMatrix("cg_stiff");
+    subloads.printVector("cg_loads");
     // std::cout << "Sub matrix for solver:" << std::endl;
     // std::cout << subMatrix;
     // std::cout << "Sub loads for solver:" << std::endl;
     // std::cout << subloads;
-
-    subMatrix.gaussElimination(subloads, subsoln);
+    if(solver == "gauss elimination"){
+        subMatrix.gaussElimination(subloads, subsoln);
+    }
+    else if(solver == "jacobi iteration"){
+        subMatrix.jacobiIteration(subloads, subsoln, 500);
+    }
+    else if(solver ==  "gauss seidel"){
+        subMatrix.gaussSeidel(subloads, subsoln, 1000);
+    }
+    else if(solver == "sor"){
+        subMatrix.sor(subloads, subsoln, 1000);
+    }
+    else if(solver == "conjugate gradient"){
+        subMatrix.conjugateGradient(subloads, subsoln, 1000000);
+    }
+    else{
+        cerr << "No Solver specified. Exiting" << endl;
+        exit(1);
+    }
     // subMatrix.gaussElimination(subloads.getVector(), subsoln.getVector());
 
     // std::cout << "Sub Solution from solver" << std::endl;
@@ -402,7 +441,8 @@ void heatXFer::solveSystem(){
     for(int i = 0; i < mySizeStiffnessMatrix; i++){
     
         if(!myConstrainedDof[i]){
-            mySolution.setValue( subsoln[j], i);
+            // mySolution.myData[i] = x[j];
+            mySolution.myData[i] = subsoln.myData[j];
             j++;
         }
     
@@ -498,3 +538,11 @@ void heatXFer::writeSolution(){
     std::cout << "Done writing solution files." << std::endl;
     std::cout << std::endl;
 };
+
+void heatXFer::writeStiffnessMatrix(string name){
+    myGlobalStiffnessMatrix.printMatrix(name);
+};
+
+void heatXFer::writeLoads(string name){
+    myLoads.printVector(name);
+}

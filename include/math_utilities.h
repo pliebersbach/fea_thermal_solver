@@ -4,16 +4,26 @@
 #include <vector>
 
 using namespace std;
-
 class myVector;
+class matrix;
+
+double vectorDotProduct(double *vec1, double *vec2, int size);
+
+void matrixVectorProduct(matrix &mat, double *vec, double *res);
+
+double l2norm(double *vec, int size);
+
+double l2norm(double *vec1, double *vec2, int size);
+
 
 class matrix{
-    private:
-    double* _matrix;
-    unsigned int _rows;
-    unsigned int _cols;
 
     public:
+
+    double* myData;
+    unsigned int myRows;
+    unsigned int myCols;
+
     matrix();
     matrix(unsigned int size);
     matrix(unsigned int rows, unsigned int cols);
@@ -33,18 +43,29 @@ class matrix{
 
     friend ostream & operator<<(ostream &os, matrix &mat);
 
+
     void gaussElimination(double * rhs, double * soln);
 
     void gaussElimination(myVector & rhs, myVector & soln);
+
+    void jacobiIteration(myVector & rhs, myVector & soln, int max_iterations);
+
+    void gaussSeidel(myVector & rhs, myVector & soln, int max_iterations);
+
+    void sor(myVector & rhs, myVector & soln, int max_iterations);
+
+    void conjugateGradient(myVector & rhs, myVector & soln, int max_iterations);
+
+    void printMatrix(string fileName);
 };
 
 class myVector{
-    private:    
-    double* _vector;
-    unsigned int _size;
 
-    public:    
+    public:
 
+    double* myData;
+    unsigned int mySize;
+    
     myVector();
     
     myVector(unsigned int size);
@@ -62,9 +83,14 @@ class myVector{
     void vector_multiply(matrix & a, myVector & b);
     
     void vector_subtract(myVector & a, myVector & b);
-    
-    double * getVector();
+
+    double l2Norm(myVector & a);
+
+    double * getDataPointer();
     
     friend ostream &operator<<(ostream &os, myVector &vec);
+
+    void printVector(string fileName);
+
 };
 // void vector_multiply(matrix & a, std::vector<double> & b,  std::vector<double> &result);

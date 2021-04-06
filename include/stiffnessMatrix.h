@@ -58,13 +58,19 @@ class heatXFer: public mesh{
     
     void bcHeatFlux(std::vector<unsigned int> &eles, double q);
 
-    void solveSystem();
+    void initializeSolution(double temp);
+
+    void solveSystem(string solver);
 
     void printSolution();
 
     void writeSolution(mesh & msh);
 
     void writeSolution();
+
+    void writeStiffnessMatrix(string name);
+
+    void writeLoads(string name);
 
     ~heatXFer();
 };

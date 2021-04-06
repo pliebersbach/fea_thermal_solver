@@ -132,7 +132,8 @@ int main(){
     // global.bcFixedTemp(temp2, 500.0);
     global.bcHeatFlux(mymesh, heat, 5000.0);
     global.assembleStiffness(mymesh, mat);
-    global.solveSystem();
+    // global.solveSystem("gauss seidel");
+    global.solveSystem("sor");
     global.printSolution();
     global.writeSolution(mymesh);
     

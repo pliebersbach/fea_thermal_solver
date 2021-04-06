@@ -95,7 +95,11 @@ int main(){
     global.bcHeatFlux(mymesh, heat, -2500.0);
     global.bcHeatGeneration(mymesh, mat, 10000.0);
     global.assembleStiffness(mymesh, mat);
-    global.solveSystem();
+    global.initializeSolution(300);
+    // global.solveSystem("jacobi iteration");
+    // global.solveSystem("gauss seidel");
+    // global.solveSystem("sor");
+    global.solveSystem("conjugate gradient"); 
     global.printSolution();
     global.writeSolution(mymesh);
 
